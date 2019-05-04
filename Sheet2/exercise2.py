@@ -14,10 +14,10 @@ from scipy.optimize import leastsq
 from sklearn.svm import SVC, LinearSVC
 
 # function to load images and labels of the original CIFAR10 dataset
-from cifar10 import load_CIFAR10
+from Ex02.cifar10 import load_CIFAR10
 
 
-cifar10_dir = './cifar-10-batches-py'# download the files from the official website
+cifar10_dir = '../Resources/cifar-10-batches-py'# download the files from the official website
 
 ######### Provided Functions ############
 def get_features(img,bins=10):
@@ -77,39 +77,49 @@ X_train_feat, Y_train, X_test_feat, Y_test = get_data()
 # Implement a linear classifier solved using least-square.
 # Suggestion: use the function "leastsq"
 class LSQclassifier:
-    weigths = np.array(0)
-    bias = 0
     def __init__(self):
-        pass
-    
-    def fit(self,x,y):
+        self.w = np.zeros((10001, 30))
+        self.f = np.zeros((10001, 30))
+
+    def fit(self, x, y):
         #TODO
-        for i in range len(y):
-            ErrorFunc = y - (lambda weigths * x + bias)
-            leastsq(ErrorFunc, weights, bias, x, y)
-        return self
+        copyX = np.copy(x)
+        copyX = np.vstack((copyX, np.ones(30)))  # Add dimension for bias
+        copyY = np.copy(y)
+        copyY = np.append(copyY, 1)  # Bias 1
+
+        errFunction = lambda x, y, w: y - np.sign(x * np.transpose(w))
+
+        for i in range(0, len(x) + 1):
+            self.f[i] = leastsq(errFunction, x0=(copyX[i, :]), args=(copyY[i], self.w[i, :]))[0]
+
+        return self.f
     
-    def predict(self,x):
+    def predict(self, x):
         #TODO
-        pred = weights * x + bias
+        pred = np.zeros(10000)
+
+        for i in range(len(pred)):
+            pred[i] = np.dot(self.f[i, :], x[i, :]) + self.f[-1][0]
         return pred
 
 # Solve binary task using a linear classifier trained by least-square
 def task1():
     # Create binary task
-    x,y,x_test,y_test = get_two_classes(X_train_feat, Y_train, X_test_feat, Y_test)
+    x, y, x_test, y_test = get_two_classes(X_train_feat, Y_train, X_test_feat, Y_test)
     # Train Linear classifier for binary classification using LSQclassifier
     #TODO
-    pipeline    = LSQclassifier.fit(x, y)
-    pred_train  = pipeline.predict(x)
-    pred_test   = pipeline.predict(x_train)
-    train_acc   = accuracy_score(y,pred_train)
-    test_acc    = accuracy_score(y_test,pred_test)
-    print('Linear classifier by Least-Square: Train %.2f, Test %.2f'%(train_acc,test_acc))
+    classifier = LSQclassifier()
+    f = classifier.fit(x, y)
+    p = classifier.predict(x)
+    
+    #train_acc = accuracy_score(y, pred_train)
+    #test_acc  = accuracy_score(y_test, pred_test)
+    #print('Linear classifier by Least-Square: Train %.2f, Test %.2f'%(train_acc,test_acc))
     # Plot learned weights using plt.bars
     # TODO
-    plt.bars(pipeline.weigths)
 
+"""
 # Binary classification using Linear SVM
 def task2():
     # Create binary task
@@ -117,16 +127,12 @@ def task2():
     # Train Linear SVM classifier for binary classification
     # Use LinearSVC()
     #TODO
-    lsvc = LinearSVC()
-    lscv.fit(x, y)
-    pred_train = lscv.predict(x)
-    pred_test  = lscv.predict(x_test)
-    train_acc  = accuracy_score(y,pred_train)
-    test_acc   = accuracy_score(y_test,pred_test)
+    
+    train_acc = accuracy_score(y,pred_train)
+    test_acc  = accuracy_score(y_test,pred_test)
     print('Linear SVM classifier: Train %.2f, Test %.2f'%(train_acc,test_acc))
     # Plot learned weights using plt.bars
     # TODO
-    plt.bars(lscv.get_params())
 
 
 # Compare in words the result and weights from least-square and svm
@@ -227,13 +233,13 @@ def task6():
     
     #Plot the loss over time
     #TODO
-
+"""
 
 if __name__ == '__main__':
   task1()
-  task2()
-  task3()
-  task4()
-  task5()
-  task6()
+  #task2()
+  #task3()
+  #task4()
+  #task5()
+  #task6()
   

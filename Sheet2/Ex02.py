@@ -12,6 +12,8 @@ from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 from scipy.optimize import leastsq
 from sklearn.svm import SVC, LinearSVC
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
 
 # function to load images and labels of the original CIFAR10 dataset
 from Ex02.cifar10 import load_CIFAR10
@@ -78,24 +80,29 @@ X_train_feat, Y_train, X_test_feat, Y_test = get_data()
 # Suggestion: use the function "leastsq"
 class LSQclassifier:
     def __init__(self):
-        self.w = np.zeros((10000, 30))
-        self.b = 0
-        self.f = np.zeros(10000)
+        self.w = np.zeros((10000, 31))
+        self.f = np.zeros((10000, 31))
 
     def fit(self, x, y):
         #TODO
-        errFunction = lambda x, y, w, b: y - np.sign(x * np.transpose(w) + b)
+        copyX = np.copy(x)
+        copyX = np.append(copyX, np.ones((10000, 1)), axis=1)  # Add dimension for bias
+
+        errFunction = lambda x, y, w: y - np.sign(x * np.transpose(w))
 
         for i in range(0, len(x)):
-            self.f[i] = leastsq(errFunction, x0=(x[i, :]), args=(y[i], self.w[i, :], self.b))[0][-1]
+            self.f[i] = leastsq(errFunction, x0=(copyX[i, :]), args=(y[i], self.w[i, :]))[0]
 
         return self.f
-    
+
     def predict(self, x):
         #TODO
-        #pred =
-        #return pred
-        pass
+        pred = np.zeros(10000)
+
+        for i in range(len(x)):
+            pred[i] = np.dot(self.f[i, 0:-1], x[i, :]) + self.f[i][-1]
+
+        return pred
 
 # Solve binary task using a linear classifier trained by least-square
 def task1():
@@ -104,16 +111,16 @@ def task1():
     # Train Linear classifier for binary classification using LSQclassifier
     #TODO
     classifier = LSQclassifier()
-    f = classifier.fit(x, y)
-    print("f: ", f)
-    
+    pred_train = classifier.fit(x, y)
+    pred_test = classifier.predict(x_test)
+
     #train_acc = accuracy_score(y, pred_train)
     #test_acc  = accuracy_score(y_test, pred_test)
-    #print('Linear classifier by Least-Square: Train %.2f, Test %.2f'%(train_acc,test_acc))
+    #print('Linear classifier by Least-Square: Train %.2f, Test %.2f'%(train_acc, test_acc))
     # Plot learned weights using plt.bars
     # TODO
 
-"""
+
 # Binary classification using Linear SVM
 def task2():
     # Create binary task
@@ -121,13 +128,20 @@ def task2():
     # Train Linear SVM classifier for binary classification
     # Use LinearSVC()
     #TODO
-    
-    train_acc = accuracy_score(y,pred_train)
-    test_acc  = accuracy_score(y_test,pred_test)
-    print('Linear SVM classifier: Train %.2f, Test %.2f'%(train_acc,test_acc))
+    classifier = LinearSVC(penalty='l2', max_iter=10000)
+    classifier.fit(x, y)
+
+    pred_train = classifier.predict(x)
+    pred_test = classifier.predict(x_test)
+
+    train_acc = accuracy_score(y, pred_train)
+    test_acc  = accuracy_score(y_test, pred_test)
+
+    print('Linear SVM classifier: Train %.2f, Test %.2f'%(train_acc, test_acc))
     # Plot learned weights using plt.bars
     # TODO
-
+    plt.bar(classifier.coef_[0, :], height=0.8)
+    plt.show()
 
 # Compare in words the result and weights from least-square and svm
 #TODO
@@ -139,18 +153,24 @@ def task3():
     x,y,x_test,y_test = get_two_classes(X_train_feat, Y_train, X_test_feat, Y_test)
     # Find best hyper-parameters (soft-margin C, kernels and gamma) using cross-validation
     #TODO
-    
+    nonLinearClass = SVC(C=1.0, kernel='rbf', gamma='auto')
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y)
+
     # Train Linear SVM classifier for binary classification
     #TODO
-    
-    train_acc = accuracy_score(y,pred_train)
-    test_acc  = accuracy_score(y_test,pred_test)
-    print('Non-Linear SVM classifier: Train %.2f, Test %.2f'%(train_acc,test_acc))
+    nonLinearClass.fit(x_train, y_train)
+    pred_train = nonLinearClass.predict(x_train)
+    pred_test  = nonLinearClass.predict(x_test)
+
+    train_acc = accuracy_score(y_train, pred_train)
+    test_acc  = accuracy_score(y_test, pred_test)
+    print('Non-Linear SVM classifier: Train %.2f, Test %.2f'%(train_acc, test_acc))
 
 # Comment the result obtained using non-linear svm
 #TODO
 
-
+"""
 # Solve multi-class task using a linear classifier trained by least-square
 def task4():
     # Create binary task
@@ -161,7 +181,7 @@ def task4():
     train_acc = accuracy_score(y,pred_train)
     test_acc  = accuracy_score(y_test,pred_test)
     print('Multi-class) Linear classifier by Least-Square: Train %.2f, Test %.2f'%(train_acc,test_acc))
-
+"""
 
 ## Solve multi-class task using a linear svm
 def task5():
@@ -169,13 +189,17 @@ def task5():
     x,y,x_test,y_test = get_multiple_classes(X_train_feat, Y_train, X_test_feat, Y_test)
     # Train multi-class linear svm
     #TODO
-    
-    train_acc = accuracy_score(y,pred_train)
-    test_acc  = accuracy_score(y_test,pred_test)
-    print('Multi-class) Linear SVM: Train %.2f, Test %.2f'%(train_acc,test_acc))
+    classifier = LinearSVC(penalty='l2', max_iter=10000)
+    classifier.fit(x, y)
+    pred_train = classifier.predict(x)
+    pred_test = classifier.predict(x_test)
+
+    train_acc = accuracy_score(y, pred_train)
+    test_acc  = accuracy_score(y_test, pred_test)
+    print('Multi-class) Linear SVM: Train %.2f, Test %.2f'%(train_acc, test_acc))
 
 
-
+"""
 # Train linear logistic regression using Pytorch
 # Answer questions from exercise pdf
 def task6():
@@ -230,10 +254,9 @@ def task6():
 """
 
 if __name__ == '__main__':
-  task1()
-  #task2()
+  #task1()
+  task2()
   #task3()
   #task4()
   #task5()
   #task6()
-  

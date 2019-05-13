@@ -11,7 +11,7 @@ from tqdm.auto import tqdm  # Not needed but very cool!
 def load_data(train=True):
     mnist = datasets.MNIST('../data',
                            train=train,
-                           download=True)
+                           download=False)
     return mnist
 
 
@@ -19,11 +19,17 @@ def plot_examples(data):
     #########################
     #### Your Code here  ####
     #########################
-    
-    # Plot some examples and put their corresponding label on top as title.
+    # Plot some example and put their corresponding label on top as title.
 
     # Also print some statistics
-
+    for i in range(10):
+        minimum = torch.min(data.data[i]).item()
+        maximum = torch.max(data.data[i]).item()
+        mean    = torch.mean(data.data[i].float()).item()
+        shape   = 1#data.data[i].size()
+        dtype   = "type"#data.data[i].dtype
+        print("Image " + str(i) + " --- Min:" + str(minimum) + " Max:" + str(maximum) +
+                " Mean:" + str(mean) + " Shape:" + str(shape) + " DType:" + dtype)
     pass
 
 
@@ -37,8 +43,11 @@ def convert_mnist_to_vectors(data):
     for image, label in tqdm(data):
         #########################
         #### Your Code here  ####
-        #########################
+        #########################        
+        mnist_vectors.append(np.array(image).reshape((1, 28*28)))
+        labels.append(label)
         pass
+        
 
 
     return mnist_vectors, labels
@@ -51,6 +60,8 @@ def prepare_data(data):
     #########################
     #### Your Code here  ####
     #########################
+    for vec in data:
+        print((vec - 128) / 128)
 
     return data
 
@@ -66,12 +77,12 @@ def do_pca(data):
     #### Your Code here  ####
     #     
     # cov = ...
-    # eigenVectors, eigenValues = ... 
+    # eigenVectors, eigenValues = torch.eig(data.data[0])
 
     # sort eigenVectors by eigenValues
     #########################
 
-    return sorted_eigenVectors
+    return 1#sorted_eigenVectors
 
 
 def plot_pcs(sorted_eigenVectors, num=10):

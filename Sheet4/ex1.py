@@ -44,7 +44,7 @@ def convert_mnist_to_vectors(data):
         #########################
         #### Your Code here  ####
         #########################        
-        mnist_vectors.append(np.array(image).reshape((1, 28*28)))
+        mnist_vectors.append(np.array(image).reshape((28*28)))
         labels.append(label)
         pass
         
@@ -61,7 +61,7 @@ def prepare_data(data):
     #### Your Code here  ####
     #########################
     for vec in data:
-        print((vec - 128) / 128)
+        vec = (vec - 128) / 128
 
     return data
 
@@ -71,12 +71,13 @@ def do_pca(data):
     data = load_data()
 
     mnist_vectors, labels = convert_mnist_to_vectors(data)
-    prepare_data(mnist_vectors)
+    #prepare_data(mnist_vectors)
 
     #########################
     #### Your Code here  ####
-    #     
-    # cov = ...
+    # 
+    cov = np.cov(mnist_vectors)
+    print(cov)
     # eigenVectors, eigenValues = torch.eig(data.data[0])
 
     # sort eigenVectors by eigenValues

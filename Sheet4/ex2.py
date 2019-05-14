@@ -28,13 +28,13 @@ class Perceptron(nn.Module):
     def __init__(self, size_hidden=100, size_out=10):
         super().__init__()
         
-        self.fc1 = # Your Code here
-        self.fc2 = # Your Code here
-        self.fc3 = # Your Code here
-        self.fc4 = # Your Code here
-        self.out_layer = # Your Code here
+        self.fc1 = np.random.rand(28*28, size_hidden)
+        self.fc2 = np.random.rand(size_hidden, size_hidden)
+        self.fc3 = np.random.rand(size_hidden, size_hidden)
+        self.fc4 = np.random.rand(size_hidden, size_hidden)
+        self.out_layer = np.random.rand(size_hidden, size_out)
         
-        self.relu =# Your Code here
+        self.relu = lambda x: np.where(x < 0, 0, x)
         
     def forward(self, x):
         out = self.fc1(x)
@@ -43,6 +43,17 @@ class Perceptron(nn.Module):
         # features asked for in exercise 3
 
         # Your Code here: The rest of the layers
+        out = self.fc2(out)
+        out = self.relu(out)
+
+        out = self.fc3(out)
+        out = self.relu(out)
+
+        out = self.fc4(out)
+        out = self.relu(out)
+
+        out = self.out_layer(out)
+        out = self.relu(out)
 
         return out
 
@@ -55,8 +66,22 @@ class Perceptron(nn.Module):
 # do an operation on those vectors you can find a `torch.Dataset` version of
 # the mnist vectors below. All it does is a simple casting operation.
 
-
 class MnistVectors(torch.utils.data.Dataset):
+    def convert_mnist_to_vectors(data):
+        mnist_vectors = []
+        labels = []
+        for image, label in tqdm(data):   
+            mnist_vectors.append(np.array(image).reshape((28*28)))
+            labels.append(label)
+            pass
+        return mnist_vectors, labels
+
+
+    def prepare_data(data):
+        for vec in data:
+            vec = (vec - 128) / 128
+
+        return data
     '''A Pytorch Dataset, which does the same data preparation as was done in
     the PCA exercise.'''
 
@@ -69,8 +94,8 @@ class MnistVectors(torch.utils.data.Dataset):
 
         ########################
         #### Your Code here ####
-        # self.mnist_vectors, self.labels = your conversion function from ex1
-        # self.mnist_vectors = prepare_data(self.mnist_vectors) also from ex1
+        self.mnist_vectors, self.labels = self.convert_mnist_to_vectors(mnist)
+        self.mnist_vectors = prepare_data(self.mnist_vectors)
         ########################
 
             
@@ -98,10 +123,10 @@ class MnistVectors(torch.utils.data.Dataset):
 # other uses that label to calculate the batch accuracy.
 
 def batch_accuracy(prediction, label):
-    return # Your Code here
+    return 1 # Your Code here
 
 def class_label(prediction):
-    return # Your code here
+    return 1 # Your code here
 
 def train(use_gpu=True):
     

@@ -53,7 +53,6 @@ class Perceptron(nn.Module):
         out = self.relu(out)
 
         out = self.out_layer(out)
-        out = self.relu(out)
 
         return out
 
@@ -123,7 +122,7 @@ class MnistVectors(torch.utils.data.Dataset):
 # other uses that label to calculate the batch accuracy.
 
 def batch_accuracy(prediction, label):
-    return 1 # Your Code here
+    return np.sum(np.where(label == prediction, 1, 0)) / len(prediction)
 
 def class_label(prediction):
     return 1 # Your code here
@@ -145,11 +144,11 @@ def train(use_gpu=True):
     
     # Use the Adam optimizer with learning rate 1e-4 and otherwise default
     # values
-    optimizer =  # Your code here
+    optimizer =  torch.optim.Adam(lr=1e-4)
 
     # Use the Cross Entropy loss from pytorch. Make sure your Perceptron does
     # not use any activation function on the output layer!
-    criterion =  # Your code here
+    criterion = nn.CrossEntropyLoss()
     
     if use_gpu:
         P.cuda()

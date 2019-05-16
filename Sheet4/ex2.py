@@ -7,7 +7,7 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-
+from ex1 import convert_mnist_to_vectors, prepare_data
 # The first thing to do is specify our model. The perceptron does a matrix
 # multiplication of its internal weights with the inputs and adds a bias in
 # each layer. After that it activates the resulting vector.
@@ -28,13 +28,13 @@ class Perceptron(nn.Module):
     def __init__(self, size_hidden=100, size_out=10):
         super().__init__()
         
-        self.fc1 = np.random.rand(28*28, size_hidden)
-        self.fc2 = np.random.rand(size_hidden, size_hidden)
-        self.fc3 = np.random.rand(size_hidden, size_hidden)
-        self.fc4 = np.random.rand(size_hidden, size_hidden)
-        self.out_layer = np.random.rand(size_hidden, size_out)
+        self.fc1 = nn.Linear(28*28, size_hidden)
+        self.fc2 = nn.Linear(size_hidden, size_hidden)
+        self.fc3 = nn.Linear(size_hidden, size_hidden)
+        self.fc4 = nn.Linear(size_hidden, size_hidden)
+        self.out_layer = nn.Linear(size_hidden, size_out)
         
-        self.relu = lambda x: np.where(x < 0, 0, x)
+        self.relu = nn.ReLU()
         
     def forward(self, x):
         out = self.fc1(x)
@@ -66,21 +66,7 @@ class Perceptron(nn.Module):
 # the mnist vectors below. All it does is a simple casting operation.
 
 class MnistVectors(torch.utils.data.Dataset):
-    def convert_mnist_to_vectors(data):
-        mnist_vectors = []
-        labels = []
-        for image, label in tqdm(data):   
-            mnist_vectors.append(np.array(image).reshape((28*28)))
-            labels.append(label)
-            pass
-        return mnist_vectors, labels
-
-
-    def prepare_data(data):
-        for vec in data:
-            vec = (vec - 128) / 128
-
-        return data
+    
     '''A Pytorch Dataset, which does the same data preparation as was done in
     the PCA exercise.'''
 
@@ -93,7 +79,7 @@ class MnistVectors(torch.utils.data.Dataset):
 
         ########################
         #### Your Code here ####
-        self.mnist_vectors, self.labels = self.convert_mnist_to_vectors(mnist)
+        self.mnist_vectors, self.labels = convert_mnist_to_vectors(mnist)
         self.mnist_vectors = prepare_data(self.mnist_vectors)
         ########################
 
@@ -125,9 +111,9 @@ def batch_accuracy(prediction, label):
     return np.sum(np.where(label == prediction, 1, 0)) / len(prediction)
 
 def class_label(prediction):
-    return 1 # Your code here
+    return torch.argmax(prediction, dim=1)
 
-def train(use_gpu=True):
+def train(use_gpu=False):
     
     # Here we instanciate our model. The weights of the model are automatically
     # initialized by pytorch
@@ -144,7 +130,7 @@ def train(use_gpu=True):
     
     # Use the Adam optimizer with learning rate 1e-4 and otherwise default
     # values
-    optimizer =  torch.optim.Adam(lr=1e-4)
+    optimizer =  torch.optim.Adam(P.parameters(), lr=1e-4)
 
     # Use the Cross Entropy loss from pytorch. Make sure your Perceptron does
     # not use any activation function on the output layer!

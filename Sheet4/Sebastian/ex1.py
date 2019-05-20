@@ -91,13 +91,13 @@ def do_pca(data):
     #########################
     #### Your Code here  ####
 
-    #cov = np.cov(scaled_data)
+    cov = np.cov(scaled_data)
 
     eigVal, eigVec= np.linalg.eig(np.reshape(scaled_data, (60000, 28, 28)))
 
     # sort eigenVectors by eigenValues
-    #idx = np.argsort(eigVal)[::-1]
-    #eigVec = eigVec[:, idx]
+    idx = np.argsort(eigVal)[::-1]
+    eigVec = eigVec[:, idx]
 
     return eigVec
 
@@ -133,10 +133,22 @@ def plot_projection(sorted_eigenVectors, data):
     #     
     # Projection
     # data_on_pcs = dot-product of data and first two eigen vectors
+    proj = []
+    for pic in range(7):
+        cache = np.dot(np.reshape(scaled_data[pic], (28, 28)), sorted_eigenVectors[1])
+        proj.append(np.dot(cache, sorted_eigenVectors[2]))
 
     # Plot
-    # ...
-    #########################
+    fig = plt.figure()
+    fig.suptitle("Projections")
+    for i in range(len(proj)):
+        a = fig.add_subplot(np.ceil(len(proj) / 3),
+                            np.ceil(len(proj) / 3),
+                            i + 1)
+        for m in range(len(proj)):
+            for n in range(len(proj[0])):
+                a.scatter(proj[i][:, m], proj[i][:, n])
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -144,8 +156,8 @@ if __name__ == '__main__':
 
     data = load_data()
 
-    #plot_examples(data)
+    plot_examples(data)
     pcs = do_pca(data)
 
-    #plot_pcs(pcs)
+    plot_pcs(pcs)
     plot_projection(pcs, data)

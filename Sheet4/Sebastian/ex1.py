@@ -24,22 +24,12 @@ def plot_examples(data):
 
     # Plot some examples and put their corresponding label on top as title.
     fig = plt.figure()
-
-    ax1 = fig.add_subplot(2, 2, 1)
-    ax1.set_title("1")
-    ax1.imshow(data.data[0])
-
-    ax1 = fig.add_subplot(2, 2, 2)
-    ax1.set_title("2")
-    ax1.imshow(data.data[1])
-
-    ax1 = fig.add_subplot(2, 2, 3)
-    ax1.set_title("3")
-    ax1.imshow(data.data[2])
-
-    ax1 = fig.add_subplot(2, 2, 4)
-    ax1.set_title("4")
-    ax1.imshow(data.data[3])
+    for i in range(10):
+        a = fig.add_subplot(np.ceil(10 / 3),
+                            np.ceil(10 / 3),
+                            i + 1)
+        a.set_title(str(i))
+        a.imshow(data.data[i])
     plt.show()
 
 
@@ -91,13 +81,13 @@ def do_pca(data):
     #########################
     #### Your Code here  ####
 
-    cov = np.cov(scaled_data)
+    #cov = np.cov(scaled_data)
 
     eigVal, eigVec= np.linalg.eig(np.reshape(scaled_data, (60000, 28, 28)))
 
     # sort eigenVectors by eigenValues
-    idx = np.argsort(eigVal)[::-1]
-    eigVec = eigVec[:, idx]
+    #idx = np.argsort(eigVal)[::-1]
+    #eigVec = eigVec[:, idx]
 
     return eigVec
 

@@ -24,22 +24,12 @@ def plot_examples(data):
 
     # Plot some examples and put their corresponding label on top as title.
     fig = plt.figure()
-
-    ax1 = fig.add_subplot(2, 2, 1)
-    ax1.set_title("1")
-    ax1.imshow(data.data[0])
-
-    ax1 = fig.add_subplot(2, 2, 2)
-    ax1.set_title("2")
-    ax1.imshow(data.data[1])
-
-    ax1 = fig.add_subplot(2, 2, 3)
-    ax1.set_title("3")
-    ax1.imshow(data.data[2])
-
-    ax1 = fig.add_subplot(2, 2, 4)
-    ax1.set_title("4")
-    ax1.imshow(data.data[3])
+    for i in range(10):
+        a = fig.add_subplot(np.ceil(10 / 3),
+                            np.ceil(10 / 3),
+                            i + 1)
+        a.set_title(str(i))
+        a.imshow(data.data[i])
     plt.show()
 
 
@@ -133,10 +123,22 @@ def plot_projection(sorted_eigenVectors, data):
     #     
     # Projection
     # data_on_pcs = dot-product of data and first two eigen vectors
+    proj = []
+    for pic in range(7):
+        cache = np.dot(np.reshape(scaled_data[pic], (28, 28)), sorted_eigenVectors[1])
+        proj.append(np.dot(cache, sorted_eigenVectors[2]))
 
     # Plot
-    # ...
-    #########################
+    fig = plt.figure()
+    fig.suptitle("Projections")
+    for i in range(len(proj)):
+        a = fig.add_subplot(np.ceil(len(proj) / 3),
+                            np.ceil(len(proj) / 3),
+                            i + 1)
+        for m in range(len(proj)):
+            for n in range(len(proj[0])):
+                a.scatter(proj[i][:, m], proj[i][:, n])
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -144,8 +146,8 @@ if __name__ == '__main__':
 
     data = load_data()
 
-    #plot_examples(data)
+    plot_examples(data)
     pcs = do_pca(data)
 
-    #plot_pcs(pcs)
+    plot_pcs(pcs)
     plot_projection(pcs, data)

@@ -24,7 +24,7 @@ class ReLU(object):
     @staticmethod
     def forward(x):
         # TODO implement ReLU
-        return
+        return np.max(np.stack((x, np.zeros(len(x)))), 0)
 
     @staticmethod
     def backward(x, dout):

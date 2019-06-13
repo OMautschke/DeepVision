@@ -1,11 +1,11 @@
 TOL = 1e-4
 
 def f(x0, x1):
-    return # TODO expression for f
+    return (2*(x0+x1)+(x0+x1)**2)**2# TODO expression for f
 
 def gradf(x0, x1):
-    d0 = # TODO partial derivative wrt x0
-    d1 = # TODO partial derivative wrt x1
+    d0 = 4*(2*(x0+x1)+3*(x0+x1)**2+(x0+x1)**3)# TODO partial derivative wrt x0
+    d1 = d0# TODO partial derivative wrt x1
     return d0, d1
 
 print("f(1,2) = ", f(1, 2))
@@ -38,25 +38,29 @@ class plus(object):
 class double(object):
     @staticmethod
     def forward(x):
-        return # TODO forward computation
+        return 2*x
 
     @staticmethod
     def backward(x, dout):
-        return # TODO backward computation
+        return (2*dout, )
 
 class square(object):
     @staticmethod
     def forward(x):
-        return # TODO forward computation
+        return x**2
 
     @staticmethod
     def backward(x, dout):
-        return # TODO backward computation
+        return (2*x*dout, )
 
 # trace the computation of f in terms of the elementary functions on a tape
 tape = list()
 tape.append(("z0", plus, ("x0", "x1")))
 tape.append(("z1", double, ("z0",)))
+tape.append(("z2", square, ("z0",)))
+tape.append(("z3", plus, ("z1", "z2")))
+tape.append(("z4", square, ("z3",)))
+
 # TODO finish computation until "z4": append tuples of length three containing
 # - name of node to be added
 # - elementary function to apply
@@ -70,7 +74,7 @@ def forward(x0, x1):
     values["x1"] = x1
     # traverse the tape to compute values of all nodes
     for (node, op, inputs) in tape:
-        values[node] = # TODO compute value of node using op.forward
+        values[node] = op.forward(*[values[inpt] for inpt in inputs])# TODO compute value of node using op.forward
     return values
 
 def backward(values):
@@ -83,8 +87,7 @@ def backward(values):
     deltas["z4"] = 1.0
     # traverse the tape in reverse to compute adjoints of all nodes
     for (node, op, inputs) in reversed(tape):
-        dinputs = # TODO compute adjoints of all parents
-
+        dinputs = op.backward(*[values[inpt] for inpt in inputs], deltas[node])# TODO compute adjoints of all parents
         # distribute adjoints to parents
         for input_, dinput in zip(inputs, dinputs):
             deltas[input_] += dinput

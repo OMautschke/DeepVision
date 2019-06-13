@@ -29,6 +29,9 @@ class ReLU(object):
     @staticmethod
     def backward(x, dout):
         # TODO implement dx
+        # TO BE CONTINUED
+        df = np.vectorize(lambda x: 1 if x > 0 else 0)
+        dx = df(x)
         return (dx,)
 
 
@@ -38,6 +41,7 @@ class CELoss(object):
         assert len(x.shape) == 2 # x is batch of predictions   (batch_size, 10)
         assert len(y.shape) == 1 # y is batch of target labels (batch_size,)
         # TODO implement cross entropy loss averaged over batch
+        cel = lambda x, y: -np.log(np.exp())
         return
 
 
@@ -82,7 +86,35 @@ class MLP(object):
         self.trainable_variables = sorted(values.keys())
 
         self.tape = list()
+        # I ASSUME WE NEED TO DO RELU HERE
+        # TO BE CONTINUED...
         self.tape.append(("z0", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z1", ReLU, ("z0")))
+
+        self.tape.append(("z2", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z3", ReLU, ("z0")))
+
+        self.tape.append(("z4", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z5", ReLU, ("z0")))
+
+        self.tape.append(("z3", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z3", ReLU, ("z0")))
+
+        self.tape.append(("z4", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z4", ReLU, ("z0")))
+
+        self.tape.append(("z5", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z5", ReLU, ("z0")))
+
+        self.tape.append(("z6", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z6", ReLU, ("z0")))
+
+        self.tape.append(("z7", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z7", ReLU, ("z0")))
+
+        self.tape.append(("z8", Linear, ("W0", "b0", "x")))
+        self.tape.append(("z8", ReLU, ("z0")))
+
         # TODO complete the tape for z0,...,z8
         self.tape.append(("z9", CELoss, ("z8", "y")))
 

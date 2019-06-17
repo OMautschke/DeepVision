@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Linear(object):
     @staticmethod
     def forward(W, b, x):
@@ -8,9 +9,11 @@ class Linear(object):
         # b are biases     (n_out,)
         # x are inputs     (batch_size, n_in)
         # output should be (batch_size, n_out)
-        f = lambda We, xe, be: We.dot(xe) + be
-        f = np.vectorize(f)
-        return f(W, x, b)
+        output = np.zeros((len(x), len(W)))
+        for j in range(len(W)):
+            for i in range(len(x)):
+                output[i] = np.dot(W[j], x[i]) + b
+        return output
 
     @staticmethod
     def backward(W, b, x, dout):
@@ -19,6 +22,8 @@ class Linear(object):
         dx = dout_*W_
         dx = np.sum(dx, axis = 1)
         # TODO implement dW and db
+        dW = np.sum(x)
+        db = len(W)
         return dW, db, dx
 
 
@@ -26,13 +31,13 @@ class ReLU(object):
     @staticmethod
     def forward(x):
         # TODO implement ReLU
-        return np.max(np.stack((x, np.zeros(len(x)))), 0)
+        return np.maximum(0, x)
 
     @staticmethod
     def backward(x, dout):
         # TODO implement dx
         df = np.vectorize(lambda x: 1 if x > 0 else 0)
-        dx = df(x)
+        dx = df(x) * dout
         return (dx,)
 
 
@@ -43,7 +48,7 @@ class CELoss(object):
         assert len(y.shape) == 1 # y is batch of target labels (batch_size,)
         # TODO implement cross entropy loss averaged over batch
         cel = lambda x, y: -np.log(np.exp(x[y]) / np.sum(np.exp(x)))
-        cel = np.vectorize(cel)
+        #cel = np.vectorize(cel)
         return cel(x, y)
 
 
@@ -51,7 +56,8 @@ class CELoss(object):
     def backward(x, y, dout):
         # TODO implement dx
         dy = 0.0 # no useful gradient for y, just set it to zero
-        return dx, dy
+        dx = lambda x, y: -(np.sum(np.exp(x)) / np.log(np.exp(x[y])))
+        return dx(x, y) * dout, dy
 
 
 def get_W(n_in, n_out):
@@ -68,7 +74,7 @@ def get_b(n_in, n_out):
 
 class MLP(object):
     def __init__(self, size_hidden = 100, size_out = 10):
-        self.verbose = verbose
+        #self.verbose = verbose
 
         values = dict()
         values["W0"] = get_W(28*28, size_hidden)
@@ -90,16 +96,16 @@ class MLP(object):
         self.tape = list()
         self.tape.append(("z0", Linear, ("W0", "b0", "x")))
         # TODO complete the tape for z0,...,z8
-        self.tape.append(("z1", ReLU, ("z0")))
+        self.tape.append(("z1", ReLU, ("z0",)))
 
         self.tape.append(("z2", Linear, ("W1", "b1", "z1")))
-        self.tape.append(("z3", ReLU, ("z2")))
+        self.tape.append(("z3", ReLU, ("z2",)))
 
         self.tape.append(("z4", Linear, ("W2", "b2", "z3")))
-        self.tape.append(("z5", ReLU, ("z4")))
+        self.tape.append(("z5", ReLU, ("z4",)))
 
         self.tape.append(("z6", Linear, ("W3", "b3", "z5")))
-        self.tape.append(("z7", ReLU, ("z6")))
+        self.tape.append(("z7", ReLU, ("z6",)))
 
         self.tape.append(("z8", Linear, ("W4", "b4", "z7")))
 
@@ -114,7 +120,7 @@ class MLP(object):
         self.values["y"] = y
         for (node, op, inputs) in self.tape:
             # TODO forward traverse and evaluate tape
-            op.forward()
+            self.values[node] = op.forward(*[self.values[inp] for inp in inputs])
         return dict((k, self.values[k]) for k in self.endpoints)
 
 
@@ -124,10 +130,11 @@ class MLP(object):
         for k in self.values:
             self.deltas[k] = 0.0
         # init the output adjoint with one
-        self.deltas["z9"] = np.array(1.0) # use array to have .shape on all deltas
+        self.deltas["z9"] = np.array(1.0)  # use array to have .shape on all deltas
         # traverse the tape in reverse to compute adjoints of all nodes
         for (node, op, inputs) in reversed(self.tape):
-            dinputs = # TODO compute adjoints of all parents
+            # TODO compute adjoints of all parents
+            dinputs = op.backward(*[self.values[inp] for inp in inputs], self.deltas[node])
 
             # distribute adjoints to parents
             for input_, dinput in zip(inputs, dinputs):

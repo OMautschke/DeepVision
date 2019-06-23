@@ -38,7 +38,7 @@ class CNN(nn.Module):
         return out
 
     def train(self):
-        trainloader, testloader = self.load_data()
+        trainloader, _ = self.load_data()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
 
@@ -56,7 +56,10 @@ class CNN(nn.Module):
 
     def load_data(self):
         transform = transforms.Compose(
-            [transforms.ToTensor(),
+            [
+             transforms.RandomHorizontalFlip(p=0.5),
+             transforms.RandomCrop(32, padding=4),
+             transforms.ToTensor(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
              ])
 

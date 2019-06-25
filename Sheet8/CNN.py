@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
-import numpy as np
 
 
 class CNN(nn.Module):
@@ -13,11 +12,13 @@ class CNN(nn.Module):
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(3, 6, kernel_size=5, stride=1, padding=0),
+            nn.BatchNorm2d(6),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2))
 
         self.layer2 = nn.Sequential(
             nn.Conv2d(6, 16, kernel_size=5, stride=1, padding=0),
+            nn.BatchNorm2d(16),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2))
 
@@ -43,16 +44,32 @@ class CNN(nn.Module):
         optimizer = torch.optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(10):
-
             for i, data in enumerate(trainloader, 0):
                 inputs, labels = data
 
                 optimizer.zero_grad()
-
                 outputs = cnn(inputs)
+
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
+
+    def eval(self):
+        _, testloader = self.load_data()
+        total_correct = 0
+        total_images = 0
+
+        with torch.no_grad():
+            for data in testloader:
+                images, labels = data
+                outputs = cnn(images)
+                _, predicted = torch.max(outputs.data, 1)
+
+                total_images += labels.size(0)
+                total_correct += (predicted == labels).sum().item()
+
+        model_accuracy = total_correct / total_images * 100
+        print('Model accuracy on {0} test images: {1:.2f}%'.format(total_images, model_accuracy))
 
     def load_data(self):
         transform = transforms.Compose(
@@ -67,6 +84,7 @@ class CNN(nn.Module):
                                                 train=True,
                                                 download=True,
                                                 transform=transform)
+
         trainloader = torch.utils.data.DataLoader(trainset,
                                                   batch_size=16,
                                                   shuffle=True)
@@ -75,31 +93,16 @@ class CNN(nn.Module):
                                                train=False,
                                                download=True,
                                                transform=transform)
+
         testloader = torch.utils.data.DataLoader(testset,
                                                  batch_size=16,
                                                  shuffle=False)
 
         return trainloader, testloader
 
+
 if __name__ == "__main__":
     cnn = CNN()
     cnn.train()
+    cnn.eval()
 
-    trainloader, testloader = cnn.load_data()
-    dataiter = iter(testloader)
-
-    total_correct = 0
-    total_images = 0
-    confusion_matrix = np.zeros([10, 10], int)
-    with torch.no_grad():
-        for data in testloader:
-            images, labels = data
-            outputs = cnn(images)
-            _, predicted = torch.max(outputs.data, 1)
-            total_images += labels.size(0)
-            total_correct += (predicted == labels).sum().item()
-            for i, l in enumerate(labels):
-                confusion_matrix[l.item(), predicted[i].item()] += 1
-
-    model_accuracy = total_correct / total_images * 100
-    print('Model accuracy on {0} test images: {1:.2f}%'.format(total_images, model_accuracy))

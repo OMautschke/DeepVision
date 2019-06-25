@@ -5,6 +5,8 @@ for more details.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms as transforms
+import torchvision
 
 
 class Block(nn.Module):
@@ -49,3 +51,71 @@ class MobileNet(nn.Module):
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return out
+
+    def train(self):
+        trainloader, _ = self.load_data()
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.SGD(mobileNet.parameters(), lr=0.001, momentum=0.9)
+
+        for epoch in range(5):
+            for i, data in enumerate(trainloader, 0):
+                inputs, labels = data
+
+                optimizer.zero_grad()
+                outputs = mobileNet(inputs)
+
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+    def eval(self):
+        _, testloader = self.load_data()
+        total_correct = 0
+        total_images = 0
+
+        with torch.no_grad():
+            for data in testloader:
+                images, labels = data
+                outputs = mobileNet(images)
+                _, predicted = torch.max(outputs.data, 1)
+
+                total_images += labels.size(0)
+                total_correct += (predicted == labels).sum().item()
+
+        model_accuracy = total_correct / total_images * 100
+        print('Model accuracy on {0} test images: {1:.2f}%'.format(total_images, model_accuracy))
+
+    def load_data(self):
+        transform = transforms.Compose(
+            [
+             transforms.RandomHorizontalFlip(p=0.5),
+             transforms.RandomCrop(32, padding=4),
+             transforms.ToTensor(),
+             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+             ])
+
+        trainset = torchvision.datasets.CIFAR10(root='./Data',
+                                                train=True,
+                                                download=True,
+                                                transform=transform)
+
+        trainloader = torch.utils.data.DataLoader(trainset,
+                                                  batch_size=16,
+                                                  shuffle=True)
+
+        testset = torchvision.datasets.CIFAR10(root='./Data',
+                                               train=False,
+                                               download=True,
+                                               transform=transform)
+
+        testloader = torch.utils.data.DataLoader(testset,
+                                                 batch_size=16,
+                                                 shuffle=False)
+
+        return trainloader, testloader
+
+
+if __name__ == "__main__":
+    mobileNet = MobileNet()
+    mobileNet.train()
+    mobileNet.eval()

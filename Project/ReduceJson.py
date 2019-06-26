@@ -10,11 +10,11 @@ with open('bdd100k_labels_images_val.json') as json_file:
             'objects': []     
         }
         for obj in pic['labels']:
-            if obj['category'] == 'lane' or obj['category'] == 'driveable_area':
+            if obj['category'] == 'lane' or obj['category'] == 'drivable area':
                 continue
             reduced_file[pic['name']]['objects'].append({
                 'category': obj['category'],
-                'box2d': obj['category']
+                'box2d': obj['box2d']
             })
 
 

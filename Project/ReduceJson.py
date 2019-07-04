@@ -1,8 +1,9 @@
 import json
 
 reduced_file = {}
+path = 'bdd100k/labels/'
 
-with open('bdd100k_labels_images_val.json') as json_file:  
+with open(path + 'bdd100k_labels_images_val.json') as json_file:
     data = json.load(json_file)
     for pic in data:
         reduced_file[pic['name']] = {
@@ -18,6 +19,5 @@ with open('bdd100k_labels_images_val.json') as json_file:
             })
 
 
-with open('reduced_labels.json', 'w') as outfile:  
+with open(path + 'reduced_labels_val.json', 'w') as outfile:
     json.dump(reduced_file, outfile)
-        

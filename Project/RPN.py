@@ -14,19 +14,25 @@ class RPN(nn.Module):
         self.anchor_size = anchor_size
         self.k = len(ratio) * len(anchor_size)
 
-        self.mid_layer = nn.Sequential(nn.Conv2d(in_channel, mid_channel, kernel_size=3, stride=1, padding=1),
+        self.rpn_conv = nn.Sequential(nn.Conv2d(in_channel, mid_channel, kernel_size=5, stride=1, padding=0),
                                        nn.ReLU())
 
         # 9 anchor * 2 classfier (object or non-object) each grid
-        self.conv1 = nn.Conv2d(mid_channel, 2 * 9, kernel_size=1, stride=1)
+        self.class_score = nn.Conv2d(mid_channel, 2 * 9, kernel_size=1, stride=1)
 
         # 9 anchor * 4 coordinate regressor each grids
-        self.conv2 = nn.Conv2d(mid_channel, 4 * 9, kernel_size=1, stride=1)
+        self.box_pred = nn.Conv2d(mid_channel, 4 * 9, kernel_size=1, stride=1)
         self.softmax = nn.Softmax()
 
     def forward(self, features):
-        features = self.mid_layer(features)
-        ligits, rpn_bbox_pred = self.conv1(features), self.conv2(features)
+        features = self.rpn_conv(features)
+        #ligits, rpn_bbox_pred = self.conv1(features), self.conv2(features)
 
         _, _, height, width = features.shape
-        return ligits, rpn_bbox_pred
+
+        class_score = self.class_score(features)
+        box_pred = self.box_pred(features)
+
+        anchor = []
+
+        return class_score, box_pred, anchor

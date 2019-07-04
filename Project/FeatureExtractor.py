@@ -26,6 +26,8 @@ class FeatureExtractor(nn.Module):
         out = self.layer1(x)
         out = self.layer2(out)
 
+        #out = out.reshape((1, 16 ))
+
         out = F.relu(self.conv_trans1(out))
         out = self.conv_trans2(out)
         return out

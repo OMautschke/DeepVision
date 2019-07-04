@@ -13,7 +13,7 @@ def main():
     test_loader, train_loader, val_loader = load_data.load_data(test_path, train_path, val_path)
 
     for batch_idx, (data, target) in enumerate(test_loader):
-        # print(data)
+        #print(data)
         pass
 
     feature_extractor = FeatureExtractor(train_loader)

@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -23,15 +22,26 @@ class FeatureExtractor(nn.Module):
         self.conv_trans2 = nn.ConvTranspose2d(6, 3, kernel_size=5, stride=1, padding=0)
 
     def forward(self, x):
-        out = self.layer1(x)
-        out = self.layer2(out)
+        print("Original: ", x.size())
 
-        #out = out.reshape((1, 16 ))
+        x = self.layer1(x)
+        print("Layer 1: ", x.size())
 
-        out = F.relu(self.conv_trans1(out))
-        out = self.conv_trans2(out)
-        return out
+        x = self.layer2(x)
+        print("Layer 2: ", x.size())
 
+        #x = x.view((1 * 16, x.size()[2], x.size()[3]))
+        #print("Reshape: ", x.size())
+
+        x = F.relu(self.conv_trans1(x))
+        print("Conv1: ", x.size())
+
+        x = self.conv_trans2(x)
+        print("Conv2: ", x.size())
+        print("\n\n")
+        return x
+
+    """
     def train(self):
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
@@ -40,6 +50,7 @@ class FeatureExtractor(nn.Module):
             for batch_idx, (data, _) in enumerate(self.train_loader):
                 optimizer.zero_grad()
                 output = self(data)
+                data = torch.tensor(data, dtype=torch.long)
 
                 loss = criterion(output, data)
                 loss.backward()
@@ -47,3 +58,4 @@ class FeatureExtractor(nn.Module):
 
                 print('Epoch {}, Batch idx {}, loss {}'.format(
                     epoch, batch_idx, loss.item()))
+    """

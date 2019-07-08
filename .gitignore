@@ -29,6 +29,7 @@ MANIFEST
 # Data
 Sheet8/Data/
 Project/bdd100k/
+Project/FeatureMap.pt
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
